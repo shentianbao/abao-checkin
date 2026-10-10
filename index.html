@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#2674ff" />
+  <meta name="description" content="阿宝的离线作业打卡与小红花奖励乐园" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%232674ff'/%3E%3Cpath d='M32 11l6 12 14 2-10 10 2 14-12-7-12 7 2-14-10-10 14-2z' fill='%23ffd84d'/%3E%3C/svg%3E" />
+  <title>阿宝的打卡乐园</title>
+  <style>
+    :root { --blue:#2674ff; --blue2:#1859d9; --yellow:#ffd84d; --red:#ff4f61; --ink:#173154; --muted:#69809e; --paper:#fff; --bg:#eef6ff; --line:#dbe8f8; --green:#25a86b; }
+    * { box-sizing:border-box; }
+    html { font-size:16px; }
+    body { margin:0; min-height:100vh; color:var(--ink); background:radial-gradient(circle at 15% 5%,#dcebff 0,transparent 34%),linear-gradient(150deg,#f8fbff 0,#eaf4ff 100%); font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif; }
+    button,input { font:inherit; }
+    button { cursor:pointer; -webkit-tap-highlight-color:transparent; }
+    .app { width:min(1120px,100%); margin:auto; padding:28px clamp(16px,4vw,48px) 44px; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:24px; }
+    .brand { display:flex; gap:14px; align-items:center; }
+    .logo { width:58px; height:58px; display:grid; place-items:center; border-radius:18px; background:var(--blue); box-shadow:0 10px 24px #2674ff35; font-size:32px; }
+    h1 { font-size:clamp(1.45rem,3vw,2.15rem); margin:0 0 4px; }
+    .date { color:var(--muted); font-size:.95rem; }
+    .parent-btn { border:1px solid var(--line); color:var(--ink); background:#ffffffcc; padding:12px 16px; border-radius:14px; font-weight:700; }
+    .layout { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(250px,.72fr); gap:22px; }
+    .card { background:#fffffff2; border:1px solid #fff; box-shadow:0 16px 42px #376da418; border-radius:28px; }
+    .main { padding:clamp(20px,4vw,34px); }
+    .progress-head { display:flex; justify-content:space-between; align-items:end; gap:16px; }
+    h2 { margin:0; font-size:1.4rem; }
+    .progress-text { color:var(--blue2); font-weight:800; }
+    .bar { height:14px; overflow:hidden; background:#e5eef9; border-radius:99px; margin:16px 0 24px; }
+    .bar > div { height:100%; width:0; background:linear-gradient(90deg,var(--blue),#53b8ff); border-radius:inherit; transition:width .35s ease; }
+    .tasks { display:grid; gap:12px; }
+    .task { width:100%; border:2px solid transparent; background:#f7faff; border-radius:20px; padding:17px 18px; display:flex; gap:15px; align-items:center; color:var(--ink); text-align:left; transition:.18s ease; }
+    .task:hover { transform:translateY(-1px); border-color:#cfe1ff; }
+    .check { flex:0 0 34px; width:34px; height:34px; display:grid; place-items:center; border:3px solid #b5cae5; border-radius:12px; color:white; font-size:22px; font-weight:900; }
+    .task-name { flex:1; font-size:1.08rem; font-weight:800; }
+    .reward { color:#d39b00; font-weight:800; white-space:nowrap; }
+    .task.done { background:#eefaf4; border-color:#bce8d1; }
+    .task.done .check { background:var(--green); border-color:var(--green); }
+    .task.done .task-name { color:#708599; text-decoration:line-through; }
+    .empty { text-align:center; color:var(--muted); padding:40px 12px; }
+    .celebrate { display:none; margin-top:20px; padding:18px; border-radius:18px; background:#fff7ce; color:#704e00; font-weight:800; text-align:center; font-size:1.1rem; }
+    .celebrate.show { display:block; animation:pop .35s ease; }
+    @keyframes pop { 0%{transform:scale(.92);opacity:0} 100%{transform:scale(1);opacity:1} }
+    aside { display:grid; gap:18px; align-content:start; }
+    .flower-card { padding:28px 24px; color:white; background:linear-gradient(150deg,#2674ff,#154ec5); position:relative; overflow:hidden; }
+    .flower-card::after { content:"★"; position:absolute; right:-18px; bottom:-45px; font-size:150px; color:#ffffff12; transform:rotate(16deg); }
+    .flower-label { opacity:.9; font-weight:700; }
+    .flower-count { display:flex; align-items:center; gap:12px; margin:12px 0 8px; }
+    .flower-count strong { font-size:3.5rem; line-height:1; }
+    .flower { font-size:43px; filter:drop-shadow(0 5px 5px #0002); }
+    .encourage { line-height:1.6; opacity:.94; }
+    .history { padding:24px; }
+    .history h2 { font-size:1.15rem; margin-bottom:14px; }
+    .history-list { display:grid; gap:10px; }
+    .history-row { display:flex; justify-content:space-between; gap:12px; color:var(--muted); padding-bottom:10px; border-bottom:1px solid var(--line); }
+    .history-row:last-child { border:0; padding-bottom:0; }
+    .history-row b { color:var(--ink); }
+    .calendar-card,.shop-card { padding:24px; }
+    .section-title { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+    .section-title h2 { font-size:1.15rem; }
+    .month-label { color:var(--muted); font-weight:700; }
+    .week,.calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; text-align:center; }
+    .week { color:var(--muted); font-size:.8rem; margin-bottom:7px; }
+    .day { aspect-ratio:1; min-height:34px; display:grid; place-items:center; border-radius:10px; background:#f4f8fd; font-weight:700; font-size:.9rem; position:relative; }
+    .day.blank { background:transparent; }
+    .day.today { outline:2px solid var(--blue); outline-offset:1px; color:var(--blue2); }
+    .day.success { background:#e4f8ed; color:#12804d; }
+    .day.success::after { content:"✓"; position:absolute; right:2px; bottom:0; font-size:.65rem; }
+    .success-banner { display:none; margin-bottom:16px; padding:13px; text-align:center; border-radius:15px; background:#e5f9ee; color:#11784a; font-weight:900; }
+    .success-banner.show { display:block; }
+    .rewards { display:grid; gap:10px; }
+    .reward-item { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:12px; border:1px solid var(--line); border-radius:16px; padding:13px; background:#f9fbff; }
+    .gift-icon { width:42px; height:42px; display:grid; place-items:center; border-radius:13px; background:#fff1b8; font-size:23px; }
+    .reward-item strong { display:block; }
+    .reward-item small { color:var(--muted); }
+    .redeem { border:0; border-radius:11px; padding:9px 12px; background:var(--red); color:white; font-weight:800; }
+    .redeem:disabled { background:#cbd5e1; cursor:not-allowed; }
+    .quiz-card { padding:24px; }
+    .quiz-rules { display:flex; flex-wrap:wrap; gap:7px; margin:-4px 0 15px; }
+    .rule-chip { padding:6px 9px; border-radius:99px; background:#fff3c7; color:#7d5900; font-size:.82rem; font-weight:800; }
+    .quiz-form { display:grid; grid-template-columns:1fr 92px auto; gap:8px; }
+    .quiz-form input { min-width:0; border:2px solid var(--line); border-radius:12px; padding:11px 12px; }
+    .quiz-form input:focus { outline:3px solid #2674ff22; border-color:var(--blue); }
+    .quiz-records { display:grid; gap:7px; margin-top:13px; }
+    .quiz-row { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:9px 11px; border-radius:11px; background:#f4f8fd; color:var(--muted); }
+    .quiz-row b { color:var(--ink); }
+    dialog { width:min(560px,calc(100% - 28px)); max-height:88vh; padding:0; border:0; border-radius:26px; box-shadow:0 30px 80px #15396855; color:var(--ink); }
+    dialog::backdrop { background:#102a4b88; backdrop-filter:blur(3px); }
+    .modal { padding:26px; }
+    .modal-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+    .icon-btn { width:42px; height:42px; border:0; border-radius:12px; background:#edf3fb; font-size:22px; }
+    .form { display:flex; gap:10px; margin-bottom:16px; }
+    .form input { min-width:0; flex:1; border:2px solid var(--line); border-radius:14px; padding:13px 14px; color:var(--ink); }
+    .form input:focus { outline:3px solid #2674ff22; border-color:var(--blue); }
+    .primary { border:0; border-radius:14px; background:var(--blue); color:#fff; font-weight:800; padding:13px 18px; }
+    .manage-list { display:grid; gap:9px; max-height:310px; overflow:auto; }
+    .manage-item { display:flex; align-items:center; gap:10px; background:#f4f8fd; border-radius:14px; padding:12px 14px; }
+    .manage-item span { flex:1; font-weight:700; }
+    .delete { border:0; background:#ffe8eb; color:#b71f34; border-radius:10px; padding:8px 11px; font-weight:700; }
+    .danger-zone { display:flex; justify-content:space-between; align-items:center; gap:14px; border-top:1px solid var(--line); margin-top:20px; padding-top:18px; color:var(--muted); font-size:.9rem; }
+    .reset { border:1px solid #ffc7ce; background:#fff; color:#b71f34; border-radius:11px; padding:9px 12px; font-weight:700; white-space:nowrap; }
+    .toast { position:fixed; left:50%; bottom:28px; transform:translate(-50%,25px); padding:12px 18px; border-radius:14px; background:#173154; color:#fff; opacity:0; pointer-events:none; transition:.2s; font-weight:700; box-shadow:0 10px 30px #17315444; }
+    .toast.show { opacity:1; transform:translate(-50%,0); }
+    @media (max-width:760px) { .app{padding-top:18px}.layout{grid-template-columns:1fr}.flower-card{order:-1}.flower-count strong{font-size:3rem}header{align-items:flex-start}.parent-btn{padding:10px 12px}.logo{width:50px;height:50px}.main{border-radius:23px}.task{padding:15px 14px}.reward{font-size:.9rem}.quiz-form{grid-template-columns:1fr 82px}.quiz-form button{grid-column:1/-1} }
+    @media (prefers-reduced-motion:reduce) { *{scroll-behavior:auto!important;animation:none!important;transition:none!important} }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand"><div class="logo" aria-hidden="true">🌟</div><div><h1>阿宝的打卡乐园</h1><div class="date" id="today"></div></div></div>
+      <button class="parent-btn" id="parentButton" type="button">家长设置</button>
+    </header>
+    <div class="layout">
+      <main class="card main">
+        <div class="progress-head"><h2>今天的作业</h2><div class="progress-text" id="progressText">0 / 0 完成</div></div>
+        <div class="bar" aria-label="今日作业进度"><div id="progressBar"></div></div>
+        <div class="tasks" id="taskList"></div>
+        <div class="celebrate" id="celebrate">🎉 今日打卡成功！所有任务都完成啦！</div>
+      </main>
+      <aside>
+        <section class="card flower-card"><div class="flower-label">我的小红花</div><div class="flower-count"><span class="flower">🌺</span><strong id="flowerCount">0</strong><span>朵</span></div><div class="encourage" id="encourage">认真完成每一项，就能收获小红花！</div></section>
+        <section class="card calendar-card"><div class="section-title"><h2>打卡日历</h2><span class="month-label" id="monthLabel"></span></div><div class="success-banner" id="successBanner">✓ 今日打卡成功</div><div class="week"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div><div class="calendar-grid" id="calendarGrid"></div></section>
+        <section class="card quiz-card"><div class="section-title"><h2>今日小测奖励</h2></div><div class="quiz-rules"><span class="rule-chip">90–94分 +1 🌺</span><span class="rule-chip">95–99分 +2 🌺</span><span class="rule-chip">100分 +3 🌺</span></div><form class="quiz-form" id="quizForm"><input id="quizSubject" maxlength="10" placeholder="科目，如语文" aria-label="小测科目" required><input id="quizScore" type="number" min="0" max="100" step="1" placeholder="分数" aria-label="小测分数" required><button class="primary" type="submit">领取奖励</button></form><div class="quiz-records" id="quizRecords"></div></section>
+        <section class="card shop-card"><div class="section-title"><h2>小红花礼物屋</h2></div><div class="rewards" id="rewardList"></div></section>
+        <section class="card history"><h2>最近打卡</h2><div class="history-list" id="historyList"></div></section>
+      </aside>
+    </div>
+  </div>
+  <dialog id="settingsDialog" aria-labelledby="settingsTitle">
+    <div class="modal"><div class="modal-head"><h2 id="settingsTitle">家长设置</h2><button class="icon-btn" id="closeDialog" aria-label="关闭">×</button></div>
+      <form class="form" id="addForm"><input id="newTask" maxlength="20" placeholder="例如：背诵课文" aria-label="新作业名称" required /><button class="primary" type="submit">添加</button></form>
+      <div class="manage-list" id="manageList"></div>
+      <div class="danger-zone"><span>重置会清除所有小红花和打卡记录</span><button class="reset" id="resetButton" type="button">重置全部</button></div>
+    </div>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    const STORAGE_KEY = 'abao-checkin-v3';
+    localStorage.removeItem('homework-flower-v1');
+    const DEFAULT_TASKS = ['回记','数学口算','英语朗读','英语听力'];
+    const OLD_DEFAULTS = ['完成语文作业','完成数学作业','阅读 20 分钟','整理书包'];
+    const REWARDS = [{flowers:20,value:10,icon:'🎁'},{flowers:40,value:20,icon:'🧸'},{flowers:100,value:50,icon:'🏆'}];
+    const dateKey = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const todayKey = dateKey(new Date());
+    function initialState(){ return { dataVersion:2, tasks:DEFAULT_TASKS.map((name,i)=>({id:`task-${i+1}`,name})), flowers:0, days:{}, bonusDays:[], history:[], redemptions:[], quizRecords:[] }; }
+    function load(){
+      try {
+        const saved={...initialState(),...JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')};
+        if((saved.dataVersion||1)<2){ const custom=saved.tasks.filter(t=>!OLD_DEFAULTS.includes(t.name)); saved.tasks=[...DEFAULT_TASKS.map((name,i)=>({id:`base-${i+1}`,name})),...custom]; saved.dataVersion=2; }
+        saved.redemptions=saved.redemptions||[]; saved.quizRecords=saved.quizRecords||[]; return saved;
+      } catch { return initialState(); }
+    }
+    let state=load();
+    function save(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); }
+    function todayDone(){ return state.days[todayKey]||[]; }
+    function escapeHtml(value){ const el=document.createElement('span'); el.textContent=value; return el.innerHTML; }
+    function toast(message){ const el=document.getElementById('toast'); el.textContent=message; el.classList.add('show'); clearTimeout(toast.timer); toast.timer=setTimeout(()=>el.classList.remove('show'),1800); }
+    function addHistory(text,flowers){ state.history.unshift({date:todayKey,text,flowers}); state.history=state.history.slice(0,12); }
+    function toggleTask(id){
+      const done=todayDone(); const index=done.indexOf(id); const task=state.tasks.find(t=>t.id===id); if(!task)return;
+      if(index>=0){ done.splice(index,1); state.flowers=Math.max(0,state.flowers-1); addHistory(`取消：${task.name}`,-1); }
+      else { done.push(id); state.flowers+=1; addHistory(`完成：${task.name}`,1); toast('真棒！获得 1 朵小红花 🌺'); }
+      state.days[todayKey]=done;
+      const allDone=state.tasks.length>0 && state.tasks.every(t=>done.includes(t.id)); const hasBonus=state.bonusDays.includes(todayKey);
+      if(allDone&&!hasBonus){ state.bonusDays.push(todayKey); addHistory('今日打卡成功',0); toast('今日打卡成功！所有任务都完成啦 🎉'); }
+      if(!allDone&&hasBonus){ state.bonusDays=state.bonusDays.filter(d=>d!==todayKey); addHistory('取消今日打卡成功',0); }
+      save(); render();
+    }
+    function renderCalendar(){
+      const now=new Date(); const year=now.getFullYear(); const month=now.getMonth(); const first=new Date(year,month,1).getDay(); const count=new Date(year,month+1,0).getDate();
+      document.getElementById('monthLabel').textContent=`${year}年${month+1}月`;
+      let html=''; for(let i=0;i<first;i++)html+='<span class="day blank"></span>';
+      for(let d=1;d<=count;d++){ const key=dateKey(new Date(year,month,d)); const success=state.bonusDays.includes(key); html+=`<span class="day ${key===todayKey?'today':''} ${success?'success':''}" aria-label="${month+1}月${d}日${success?'打卡成功':'未打卡'}">${d}</span>`; }
+      document.getElementById('calendarGrid').innerHTML=html;
+    }
+    function redeem(flowers,value){
+      if(state.flowers<flowers){ toast(`还差 ${flowers-state.flowers} 朵小红花`); return; }
+      if(!confirm(`用 ${flowers} 朵小红花兑换价值 ${value} 元以下的礼物吗？`))return;
+      state.flowers-=flowers; state.redemptions.unshift({date:todayKey,flowers,value}); addHistory(`兑换${value}元以下礼物`,-flowers); save(); render(); toast('兑换成功，请找家长领取礼物 🎁');
+    }
+    function addQuiz(subject,score){
+      const reward=score===100?3:score>=95?2:score>=90?1:0;
+      state.quizRecords.unshift({id:`quiz-${Date.now()}`,date:todayKey,subject,score,reward}); state.quizRecords=state.quizRecords.slice(0,50);
+      if(reward>0){ state.flowers+=reward; addHistory(`${subject}小测 ${score} 分`,reward); toast(`小测真棒！获得 ${reward} 朵小红花 🌺`); }
+      else { addHistory(`${subject}小测 ${score} 分`,0); toast('已经记录，90 分以上可以获得小红花'); }
+      save(); render();
+    }
+    function render(){
+      const done=todayDone(); const total=state.tasks.length; const count=state.tasks.filter(t=>done.includes(t.id)).length; const percent=total?Math.round(count/total*100):0;
+      document.getElementById('progressText').textContent=`${count} / ${total} 完成`; document.getElementById('progressBar').style.width=`${percent}%`; document.getElementById('flowerCount').textContent=state.flowers;
+      document.getElementById('encourage').textContent=state.flowers>=30?'你已经是坚持小达人啦！':state.flowers>=10?'坚持得真不错，继续加油！':'认真完成每一项，就能收获小红花！';
+      document.getElementById('celebrate').classList.toggle('show',total>0&&count===total);
+      document.getElementById('successBanner').classList.toggle('show',state.bonusDays.includes(todayKey));
+      document.getElementById('taskList').innerHTML=total?state.tasks.map(t=>`<button class="task ${done.includes(t.id)?'done':''}" data-id="${t.id}" aria-pressed="${done.includes(t.id)}"><span class="check">${done.includes(t.id)?'✓':''}</span><span class="task-name">${escapeHtml(t.name)}</span><span class="reward">+1 🌺</span></button>`).join(''):'<div class="empty">还没有作业，请让家长添加吧。</div>';
+      document.querySelectorAll('.task').forEach(el=>el.addEventListener('click',()=>toggleTask(el.dataset.id)));
+      document.getElementById('historyList').innerHTML=state.history.length?state.history.slice(0,5).map(h=>`<div class="history-row"><span>${escapeHtml(h.text)}</span><b>${h.flowers>0?'+':''}${h.flowers} 🌺</b></div>`).join(''):'<div class="empty" style="padding:15px 0">完成作业后，这里会留下记录。</div>';
+      document.getElementById('manageList').innerHTML=state.tasks.map(t=>`<div class="manage-item"><span>${escapeHtml(t.name)}</span><button class="delete" data-delete="${t.id}">删除</button></div>`).join('');
+      document.querySelectorAll('[data-delete]').forEach(el=>el.addEventListener('click',()=>deleteTask(el.dataset.delete)));
+      document.getElementById('rewardList').innerHTML=REWARDS.map(r=>`<div class="reward-item"><span class="gift-icon">${r.icon}</span><div><strong>${r.flowers} 朵小红花</strong><small>兑换价值 ${r.value} 元以下礼物</small></div><button class="redeem" data-redeem="${r.flowers}" ${state.flowers<r.flowers?'disabled':''}>兑换</button></div>`).join('');
+      document.querySelectorAll('[data-redeem]').forEach(el=>el.addEventListener('click',()=>{ const r=REWARDS.find(x=>x.flowers===Number(el.dataset.redeem)); redeem(r.flowers,r.value); }));
+      const todayQuiz=state.quizRecords.filter(q=>q.date===todayKey);
+      document.getElementById('quizRecords').innerHTML=todayQuiz.length?todayQuiz.map(q=>`<div class="quiz-row"><span><b>${escapeHtml(q.subject)}</b> · ${q.score} 分</span><b>${q.reward?`+${q.reward} 🌺`:'继续加油'}</b></div>`).join(''):'<div class="empty" style="padding:8px 0">今天还没有小测记录。</div>';
+      renderCalendar();
+    }
+    function deleteTask(id){ const task=state.tasks.find(t=>t.id===id); if(!task)return; state.tasks=state.tasks.filter(t=>t.id!==id); Object.keys(state.days).forEach(d=>state.days[d]=state.days[d].filter(x=>x!==id)); save(); render(); toast(`已删除“${task.name}”`); }
+    document.getElementById('today').textContent=new Intl.DateTimeFormat('zh-CN',{month:'long',day:'numeric',weekday:'long'}).format(new Date());
+    const dialog=document.getElementById('settingsDialog'); document.getElementById('parentButton').onclick=()=>dialog.showModal(); document.getElementById('closeDialog').onclick=()=>dialog.close();
+    document.getElementById('addForm').addEventListener('submit',e=>{ e.preventDefault(); const input=document.getElementById('newTask'); const name=input.value.trim(); if(!name)return; state.tasks.push({id:`task-${Date.now()}`,name}); input.value=''; save(); render(); toast('新作业已添加'); });
+    document.getElementById('quizForm').addEventListener('submit',e=>{ e.preventDefault(); const subject=document.getElementById('quizSubject').value.trim(); const score=Number(document.getElementById('quizScore').value); if(!subject||!Number.isInteger(score)||score<0||score>100){ toast('请填写科目和 0–100 的整数分数'); return; } addQuiz(subject,score); e.target.reset(); });
+    document.getElementById('resetButton').onclick=()=>{ if(confirm('确定要清除全部小红花和记录吗？')){ state=initialState(); save(); render(); dialog.close(); toast('已恢复初始状态'); } };
+    if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+    function registerWebMCP(){ const mc=document.modelContext; if(!mc?.registerTool)return; try { mc.registerTool({name:'complete_homework',title:'完成作业',description:'将指定名称的今日作业标记为已完成，并更新小红花。',inputSchema:{type:'object',properties:{taskName:{type:'string'}},required:['taskName'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute({taskName}){ const task=state.tasks.find(t=>t.name===taskName); if(!task)throw new Error('未找到这项作业'); if(!todayDone().includes(task.id))toggleTask(task.id); return {task:task.name,completed:true,flowers:state.flowers}; }}); } catch {}
+    }
+    save(); render(); registerWebMCP();
+  </script>
+</body>
+</html>
